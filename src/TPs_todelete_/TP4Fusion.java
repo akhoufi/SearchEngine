@@ -46,9 +46,6 @@ public class TP4Fusion {
 		}
 
 		while (line1 != null && line2 != null) {
-			if(word2.equals("500")){
-				System.out.println(line2);
-			}
 			if (word1.equals(word2)) {
 				Set<String> files = new HashSet<String>(Arrays.asList(words1[2].split(",")));
 				files.addAll(Arrays.asList(words2[2].split(",")));

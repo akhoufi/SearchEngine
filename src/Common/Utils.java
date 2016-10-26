@@ -395,4 +395,34 @@ public class Utils {
 		return tfIdfs;
 	}
 
+	public static void getWeightFiles(File inDir, File outDir, Normalizer normalizer) throws IOException {
+		// calcul des dfs
+		HashMap<String, Integer> dfs = getDocumentFrequency(inDir, normalizer);
+		// Nombre de documents
+		File[] files = inDir.listFiles();
+		int documentNumber = files.length;
+		if (!outDir.exists()) {
+			outDir.mkdirs();
+		}
+		
+		// TfIdfs 
+		for (File file : files) {
+			HashMap<String, Double> tfIdfs = getTfIdf(file, dfs, documentNumber, normalizer);
+			TreeSet<String> words = new TreeSet<String>(tfIdfs.keySet());
+			// on écrit dans un fichier
+			try {
+				FileWriter fw = new FileWriter (new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
+				BufferedWriter bw = new BufferedWriter (fw);
+				PrintWriter out = new PrintWriter (bw);
+				// Ecriture des mots
+				for (String word : words) {
+					out.println(word + "\t" + tfIdfs.get(word)); 
+				}
+				out.close();
+			}
+			catch (Exception e){
+				System.out.println(e.toString());
+			}		
+		}
+	}
 }
