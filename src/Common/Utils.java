@@ -3,10 +3,13 @@ package Common;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,6 +77,8 @@ public class Utils {
 				out.println(word + "\t" + fileList.size() + "\t" + fileListString);
 			}
 			out.close();
+			bw.close();
+			fw.close();
 		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
@@ -137,6 +142,8 @@ public class Utils {
 				out.println(word + "\t" + fileList.size() + "\t" + fileListString + "\n");
 			}
 			out.close();
+			bw.close();
+			fw.close();
 		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
@@ -242,6 +249,8 @@ public class Utils {
 		out.close();
 		sc.close();
 		sc2.close();
+		bw.close();
+		fw.close();
 	}
 
 	public static double getSimilarity(File file1, File file2) throws IOException {
@@ -266,7 +275,7 @@ public class Utils {
 		}
 		br1.close();
 		br2.close();
-
+		
 		for (String word : wordsList) {
 			if (hits1.get(word) != null) {
 				w1 = hits1.get(word);
@@ -314,7 +323,8 @@ public class Utils {
 			out.println(fileName + "\t" + similarity);
 		}
 		out.close();
-
+		bw.close();
+		fw.close();
 	}
 
 	public static HashMap<String, Integer> getTermFrequencies(File file, Normalizer normalizer) throws IOException {
@@ -419,10 +429,36 @@ public class Utils {
 					out.println(word + "\t" + tfIdfs.get(word)); 
 				}
 				out.close();
+				bw.close();
+				fw.close();
 			}
 			catch (Exception e){
 				System.out.println(e.toString());
 			}		
 		}
 	}
+	
+	//http://stackoverflow.com/questions/106770/standard-concise-way-to-copy-a-file-in-java
+		public static void copyFile(File sourceFile, File destFile) throws IOException {
+		    if(!destFile.exists()) {
+		        destFile.createNewFile();
+		    }
+
+		    FileChannel source = null;
+		    FileChannel destination = null;
+
+		    try {
+		        source = new FileInputStream(sourceFile).getChannel();
+		        destination = new FileOutputStream(destFile).getChannel();
+		        destination.transferFrom(source, 0, source.size());
+		    }
+		    finally {
+		        if(source != null) {
+		            source.close();
+		        }
+		        if(destination != null) {
+		            destination.close();
+		        }
+		    }
+		}
 }
