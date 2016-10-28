@@ -374,6 +374,7 @@ public class Utils {
 		}
 		return hits;
 	}
+	
 
 	public static HashMap<String, Double> getTfIdf(File file, HashMap<String, Integer> dfs, int documentNumber,
 			Normalizer normalizer) throws IOException {
@@ -437,6 +438,7 @@ public class Utils {
 			}		
 		}
 	}
+		
 	
 	//http://stackoverflow.com/questions/106770/standard-concise-way-to-copy-a-file-in-java
 		public static void copyFile(File sourceFile, File destFile) throws IOException {
