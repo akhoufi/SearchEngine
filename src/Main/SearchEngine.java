@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -65,63 +67,42 @@ public class SearchEngine implements Constants {
 		return pages;
 	}
 
-	// Set a directory with the pages from the text folder (construction du
-	// corpus lié à la requete et transformation de la requete en document)
-	// indir : le chemin do dossier text
-	public static void setPagesDir(Set<String> pages, String query, File inDir, File outDir) throws IOException {
-		String pageDir = inDir.getAbsolutePath();
-		String[] nameParts = null;
-		String[] pageDate = null;
-		String year = null;
-		String month = null;
-		String day = null;
-
+	//On considère la requete comme un document et on calcul son .poids et on 
+	// le met a cote des autres (dans le dossier weights : query.poids)	
+	public static void saveQueryWeights(String query, File invertedFile, File textDirectory, File outDir, Normalizer normalizer) throws IOException {
+	
+		ArrayList<String> keyWords = normalizer.normalize(query);
+		HashMap<String, Integer> dfs = IndexGenerator.getDft(invertedFile);
+		int documentNumber = IndexGenerator.getNbDocuments(textDirectory);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
 		}
-
-		// on écrit la requete dans un fichier
+		// on écrit dans un fichier
 		try {
-			FileWriter fw = new FileWriter(new File(outDir.getAbsolutePath() + "/query.txt"));
-			BufferedWriter bw = new BufferedWriter(fw);
-			PrintWriter out = new PrintWriter(bw);
+			FileWriter fw = new FileWriter (new File(outDir.getAbsolutePath()+"/query.poids"));
+			BufferedWriter bw = new BufferedWriter (fw);
+			PrintWriter out = new PrintWriter (bw);
+			Integer tf;
+			Double tfIdf;
 			// Ecriture des mots
-			out.println(query.toLowerCase());
+			for(String keyWord : keyWords){
+				tf = 1;
+				tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(keyWord));
+				out.println(keyWord + "\t" + tfIdf); 
+			}
 			out.close();
-		} catch (Exception e) {
+			bw.close();
+			fw.close();
+		}
+		catch (Exception e){
 			System.out.println(e.toString());
 		}
-
-		// On copie le corpus dans le dossier outDir, à cote du document de la
-		// requete
-		for (String page : pages) {
-			nameParts = page.split("_");
-			pageDate = nameParts[0].split("");
-			year = pageDate[0] + pageDate[1] + pageDate[2] + pageDate[3];
-			month = pageDate[4] + pageDate[5];
-			day = pageDate[6] + pageDate[7];
-			pageDir = inDir.getAbsolutePath() + "/" + month + "/" + day + "/" + page;
-			Utils.copyFile(new File(pageDir), new File(outDir.getAbsolutePath() + "/" + page));
-
-		}
-
 	}
 
-	// Pour calculer les fichier .poids, on utilise directement la fonction :
-	// public static void getWeightFiles(File inDir, File outDir, Normalizer
-	// normalizer) throws IOException {
-	// deja codé dans Utils.java , c'est pour cela que j'ai créé la fonction
-	// setPagesDir()
-	// afin de l'utiliser directement
-	// La requete aura aussi son fichier .poids puisqu'on l'a mis avec les
-	// documents du corpus
 
 	// Classement des pages repondant à la requete par similarite decroissante
-	// dans un fichier
-	// La requete est considere comme un document, son .poids doit se trouver
-	// dans le dossier
-	// inDir a cote des .poids des autres pages
-	//
+	//   dans un fichier outFile
+	// inDir : contient tous les fichiers .poids 
 	public static void getSimilarPages(File inDir, File outFile) throws IOException {
 		File query = new File(inDir.getAbsolutePath() + "/query.poids");
 		File[] files = inDir.listFiles();
@@ -132,6 +113,8 @@ public class SearchEngine implements Constants {
 
 	}
 
+
+	
 	// Choisir les pages les plus similaires à afficher
 	// TODO
 	public static void getPagesToDisplay() throws IOException {
@@ -180,8 +163,7 @@ public class SearchEngine implements Constants {
 		Set<String> pagesList = new HashSet<>();
 		File results = new File(RESULTS_DIR + "/results.txt");
 		pagesList = getPages(query, new File(FINAL_INDEX_DIR + "/index.ind"), stemmer);
-		setPagesDir(pagesList, query, new File(TEXT_DIR), new File(CORPUS_DIR));
-		Utils.getWeightFiles(new File(CORPUS_DIR), new File(WEIGHT_FILES_FIR), stemmer);
+		saveQueryWeights(query, new File(FINAL_INDEX_DIR + "/index.ind"), new File(TEXT_DIR), new File(WEIGHT_FILES_FIR), stemmer);
 		getSimilarPages(new File(WEIGHT_FILES_FIR), results);
 
 	}
