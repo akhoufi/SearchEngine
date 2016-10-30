@@ -85,7 +85,6 @@ public class IndexGenerator implements Constants {
 		// Utils.mergeInvertedFiles(temp, files[i], mergedInvertedFile);
 		// System.out.println("Fusion avec " + files[i].getName());
 		// }
-
 		if (dir.isDirectory()) {
 
 			File[] files = dir.listFiles();
@@ -234,6 +233,10 @@ public class IndexGenerator implements Constants {
 			// File(INVERTED_INDEXES_DIR));
 
 			// MergeManyInvertedFiles
+			File outDir = new File(FINAL_INDEX_DIR);
+			if (!outDir.exists()) {
+				outDir.mkdir();
+			}
 			String mergedFile = FINAL_INDEX_DIR + "/index.ind";
 			mergeManyInvertedFiles(new File(INVERTED_INDEXES_DIR), new File(mergedFile));
 
