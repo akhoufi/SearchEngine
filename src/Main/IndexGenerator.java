@@ -72,7 +72,7 @@ public class IndexGenerator implements Constants {
 					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + ".ind");
 					if (i + 1 == files.length) {
 						System.out.println("Adding " + files[i].getName());
-						subListFiles.add(temp);
+						subListFiles.add(files[i]);
 						break;
 					} else {
 						System.out.println("Merging " + files[i].getName() + " and " + files[i + 1].getName());
