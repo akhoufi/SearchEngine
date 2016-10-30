@@ -61,30 +61,6 @@ public class IndexGenerator implements Constants {
 	// entree et sortie de la fusion !
 	// TODO : changer cette méthode ça aprend bcp de temps !!!!
 	public static void mergeManyInvertedFiles(File dir, File mergedInvertedFile) throws IOException {
-
-		// int i = 2;
-		//
-		// if (dir.isDirectory()) {
-		// File[] files = dir.listFiles();
-		// // fichier temp pour ne pas utiliser mergedInvertedFile comme entree
-		// // et sortie de mergeInvertedFiles
-		// // sinon on va ecraser du contenu
-		// File temp = new File(mergedInvertedFile.getParentFile() +
-		// "/temp.ind");
-		// Utils.mergeInvertedFiles(files[0], files[1], mergedInvertedFile);
-		// // Files.copy( mergedInvertedFile.toPath(), temp.toPath());
-		// // copyFile(mergedInvertedFile, temp);
-		// while (i <= files.length - 2) {
-		// Utils.mergeInvertedFiles(mergedInvertedFile, files[i], temp);
-		// Utils.mergeInvertedFiles(temp, files[i + 1], mergedInvertedFile);
-		// System.out.println("Fusion avec " + files[i].getName() + " et " +
-		// files[i + 1].getName());
-		// i = i + 2;
-		// }
-		// Utils.copyFile(mergedInvertedFile, temp);
-		// Utils.mergeInvertedFiles(temp, files[i], mergedInvertedFile);
-		// System.out.println("Fusion avec " + files[i].getName());
-		// }
 		if (dir.isDirectory()) {
 
 			File[] files = dir.listFiles();
@@ -104,7 +80,7 @@ public class IndexGenerator implements Constants {
 						subListFiles.add(temp);
 
 					}
-					
+
 				}
 				files = new File[subListFiles.size()];
 				files = subListFiles.toArray(files);
@@ -236,8 +212,7 @@ public class IndexGenerator implements Constants {
 		// SaveInvertedFilesByPacks
 		try {
 			Normalizer stemmer = new FrenchStemmer();
-			// saveInvertedFileByPack(new File(TEXT_DIR), stemmer, new
-			// File(INVERTED_INDEXES_DIR));
+			saveInvertedFileByPack(new File(TEXT_DIR), stemmer, new File(INVERTED_INDEXES_DIR));
 
 			// MergeManyInvertedFiles
 			File outDir = new File(FINAL_INDEX_DIR);
