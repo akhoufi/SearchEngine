@@ -94,16 +94,22 @@ public class IndexGenerator implements Constants {
 				subListFiles = new ArrayList<File>();
 				for (int i = 0, j = 0; i < files.length; i = i + 2, j++) {
 					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + ".ind");
-					if (i == files.length) {
+					if (i + 1 == files.length) {
 						System.out.println("Adding " + files[i].getName());
+						subListFiles.add(temp);
+						break;
 					} else {
-						Utils.mergeInvertedFiles(files[i], files[i + 1], temp);
 						System.out.println("Merging " + files[i].getName() + " and " + files[i + 1].getName());
+						Utils.mergeInvertedFiles(files[i], files[i + 1], temp);
+						subListFiles.add(temp);
+
 					}
+					
 				}
-				files = new File[subListFiles.size()];;
-				files =subListFiles.toArray(files);
+				files = new File[subListFiles.size()];
+				files = subListFiles.toArray(files);
 			}
+			subListFiles.get(0).renameTo(mergedInvertedFile);
 		}
 	}
 
