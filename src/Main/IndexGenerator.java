@@ -101,7 +101,8 @@ public class IndexGenerator implements Constants {
 						System.out.println("Merging " + files[i].getName() + " and " + files[i + 1].getName());
 					}
 				}
-				files = (File[]) subListFiles.toArray();
+				files = new File[subListFiles.size()];;
+				files =subListFiles.toArray(files);
 			}
 		}
 	}
