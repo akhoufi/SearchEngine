@@ -9,12 +9,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
+import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
@@ -28,9 +32,10 @@ import Common.Normalizer;
 public class IndexGenerator implements Constants {
 
 	// Save inverted files by pack = 1 day
-	public static void saveInvertedFileByPack(File dir, Normalizer normalizer, File outDir) throws IOException {
+	public static void saveInvertedFileByPack(File dir, Normalizer normalizer, File outDir,
+			LinkedHashMap<String, Integer> postingsMap, File wordListFile) throws IOException {
 
-		TreeMap<String, TreeSet<String>> invertedFile = new TreeMap<>();
+		TreeMap<Integer, TreeSet<Integer>> invertedFile = new TreeMap<>();
 
 		if (!outDir.exists()) {
 			outDir.mkdirs();
@@ -38,15 +43,14 @@ public class IndexGenerator implements Constants {
 
 		if (dir.isDirectory()) {
 			File[] subDirs = dir.listFiles();
-
+			String wordList;
 			for (File subDir : subDirs) {
 				File[] subDirs2 = subDir.listFiles();
-
 				for (File subDir2 : subDirs2) {
-
+					wordList = Utils.getWordList(wordListFile);
 					File outFile = new File(
 							outDir.getPath() + "/" + subDir.getName() + "_" + subDir2.getName() + ".ind");
-					invertedFile = Utils.getInvertedFile(subDir2, normalizer);
+					invertedFile = Utils.getInvertedFile(subDir2, normalizer, postingsMap, wordList, wordListFile);
 					Utils.saveInvertedFile(invertedFile, outFile);
 
 				}
@@ -63,12 +67,11 @@ public class IndexGenerator implements Constants {
 
 			File[] files = dir.listFiles();
 			ArrayList<File> subListFiles = new ArrayList<File>();
-
+			int k = 0;
 			while (files.length != 1) {
-				int k = 0;
 				subListFiles = new ArrayList<File>();
 				for (int i = 0, j = 0; i < files.length; i = i + 2, j++) {
-					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + "_" + k++ + ".ind");
+					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + "_" + k + ".ind");
 					if (i + 1 == files.length) {
 						System.out.println("Adding " + files[i].getName());
 						subListFiles.add(files[i]);
@@ -83,6 +86,7 @@ public class IndexGenerator implements Constants {
 				}
 				files = new File[subListFiles.size()];
 				files = subListFiles.toArray(files);
+				k++;
 			}
 			subListFiles.get(0).renameTo(mergedInvertedFile);
 		}
@@ -112,6 +116,8 @@ public class IndexGenerator implements Constants {
 
 	// Gets document frequency of words using the index generated, unlike what
 	// we did in TP
+	//Je n'ai pas changé cette méthode (à toi de l'adapter, j'ai créé une fonction dans Utils qui récupère l'index nécessaire pour les DF (getDFIndex) 
+	//Mais il est en <Integer, Integer> car je garde le mot en tant que position (comme on en a parlé) 
 	public static HashMap<String, Integer> getDft(File invertedFile) throws IOException {
 		HashMap<String, Integer> hits = new HashMap<String, Integer>();
 		String line = null;
@@ -212,22 +218,32 @@ public class IndexGenerator implements Constants {
 		try {
 			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
 			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
-			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR));
-			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR));
 
-			// MergeManyInvertedFiles
-			File outStemDir = new File(FINAL_INDEX_STEM_DIR);
-			if (!outStemDir.exists()) {
-				outStemDir.mkdir();
-			}
+			// Construct and save postings (files) index
+//			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
+//			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
+//			File wordListFile=new File(WORD_LIST_FILE);
+//			wordListFile.createNewFile();
+//			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
+//					postingsMap, wordListFile);
+//			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
+//					postingsMap, wordListFile);
 
-			File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
-			if (!outTokenDir.exists()) {
-				outTokenDir.mkdir();
-			}
-
-			mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new File(FINAL_STEM_INDEX));
-			mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX));
+			 //MergeManyInvertedFiles
+			 File outStemDir = new File(FINAL_INDEX_STEM_DIR);
+			 if (!outStemDir.exists()) {
+			 outStemDir.mkdir();
+			 }
+			
+			 File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
+			 if (!outTokenDir.exists()) {
+			 outTokenDir.mkdir();
+			 }
+			
+			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
+			 File(FINAL_STEM_INDEX));
+//			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new
+//			 File(FINAL_TOKEN_INDEX));
 
 		} catch (IOException e) {
 			e.printStackTrace();

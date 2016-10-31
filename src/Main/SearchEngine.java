@@ -162,8 +162,8 @@ public class SearchEngine implements Constants {
 		String query = "charlie hebdo";
 		Set<String> pagesList = new HashSet<>();
 		File results = new File(RESULTS_DIR + "/results.txt");
-		pagesList = getPages(query, new File(FINAL_INDEX_DIR + "/index.ind"), stemmer);
-		saveQueryWeights(query, new File(FINAL_INDEX_DIR + "/index.ind"), new File(TEXT_DIR), new File(WEIGHT_FILES_FIR), stemmer);
+		pagesList = getPages(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), stemmer);
+		saveQueryWeights(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), new File(TEXT_DIR), new File(WEIGHT_FILES_FIR), stemmer);
 		getSimilarPages(new File(WEIGHT_FILES_FIR), results);
 
 	}

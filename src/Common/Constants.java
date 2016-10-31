@@ -14,4 +14,6 @@ public interface Constants {
 	static String STOPWORDS_FILENAME = "frenchST.txt";
 	static String FINAL_STEM_INDEX = FINAL_INDEX_STEM_DIR + "/indexStem.ind";
 	static String FINAL_TOKEN_INDEX = FINAL_INDEX_TOKEN_DIR + "/indexToken.ind";
+	static String POSTING_INDEX_FILE = "postingIndex.ind";
+	static String WORD_LIST_FILE = "wordList.txt";
 }

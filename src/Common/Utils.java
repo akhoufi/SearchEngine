@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -19,6 +20,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -27,141 +30,36 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Utils {
-	final static Runtime runtime = Runtime.getRuntime();
-	private static HashMap<Integer, Long> startTimes = new HashMap<Integer, Long>();
-	private static int chronoId = 0;
-	/**
-     * Returns a String representation of memory information 
-     * @return a String representation of memory information
-     */
-	public static String memoryInfo() {
-		final long maxMemory = runtime.maxMemory();
-		final long allocatedMemory = runtime.totalMemory();
-		final long freeMemory = runtime.freeMemory();
-		return "  free memory: "
-				+ (freeMemory / 1024.0 / 1024.0)
-				+ "\n  allocated memory: "
-				+ (allocatedMemory / 1024.0 / 1024.0)
-				+ "\n  max memory: "
-				+ (maxMemory / 1024.0 / 1024.0)
-				+ "\n  total free memory: "
-				+ ((freeMemory + (maxMemory - allocatedMemory)) / 1024.0 / 1024.0);
-	} 
-	
-	/**
-	 * Returns used memory (in bytes)
-	 * @return used memory (in bytes)
-	 */
-	public static long getUsedMemory() {
-		final long allocatedMemory = runtime.totalMemory();
-		final long freeMemory = runtime.freeMemory();
-		return allocatedMemory - freeMemory;
-	}
 
-	/**
-	 * Returns <code>true</code> if the memory is 90% full, <code>false</code> otherwise
-	 * @return <code>true</code> if the memory is 90% full, <code>false</code> otherwise
-	 */
-	public static boolean isMemoryFull() {
-		return isMemoryFull(0.9);
-	}
-	
-	/**
-	 * Return <code>true</code> if the ratio of the memory is full.
-	 * @param ratio
-	 * @return <code>true</code> if the ratio of the memory is full.
-	 */
-	public static boolean isMemoryFull(double ratio) {
-		final long maxMemory = runtime.maxMemory();
-		final long allocatedMemory = runtime.totalMemory();
-		final long freeMemory = runtime.freeMemory();
-		final double r = ((double)(allocatedMemory - freeMemory) / (double)maxMemory);
-		return r > ratio;
-	}
-
-	
-    /**
-     * Waits until a key has been pressed.
-     */
-    public static void waitKeyPressed() {
-    	try {
-    		System.out.println("\nPress a key to continue... \n");
-			System.in.read();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    }
-    
-    /**
-     * Starts the chrono.
-     * @return the identifier of the chrono
-     */
-	public static int startChrono() {
-		startTimes.put(++chronoId, System.currentTimeMillis());
-		return chronoId;
-	}
-	
-	/**
-	 * Ends the chrono and returns the time in seconds since last start
-	 * @param chronoId the identifier of the chrono to end.
-	 * @return the time in seconds since last start of the identified chrono
-	 */
-	public static double endChrono(int chronoId) {
-		long endTime = System.currentTimeMillis();
-        long elapsed = endTime - startTimes.get(chronoId);
-        return ((double)elapsed/1000.0);
-	}
-	
-	/**
-	 * Ends the chrono and returns a String representation of the time since last start
-	 * @param chronoId the identifier of the chrono to end.
-	 * @return a String representation of the time since last start
-	 */
-	public static String formatEndChrono(int chronoId) {
-        long endTime = System.currentTimeMillis();
-        long elapsed = endTime - startTimes.get(chronoId);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");            
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return dateFormat.format(new Date(elapsed));
-	}
-	
-	/**
-	 * Returns a String representation of the current date and time 
-	 * @return a String representation of the current date and time
-	 */
-	public static String logTime() {
-		Calendar now = Calendar.getInstance();
-		int hh = now.get(Calendar.HOUR_OF_DAY);         
-		int mm = now.get(Calendar.MINUTE);         
-		int ss = now.get(Calendar.SECOND);         
-		int mois = now.get(Calendar.MONTH) +  1;         
-		int jour= now.get(Calendar.DAY_OF_MONTH);         
-		int annee = now.get(Calendar.YEAR);                    
-		return jour+" / "+mois+" / " +annee+ "   "+ hh+":"+mm+":"+ss + "\n";    
-	}
-	
-	public static TreeMap<String, TreeSet<String>> getInvertedFile(File dir, Normalizer normalizer) throws IOException {
-		TreeMap<String, TreeSet<String>> invertedFileMap = new TreeMap<>();
+	public static TreeMap<Integer, TreeSet<Integer>> getInvertedFile(File dir, Normalizer normalizer,
+			LinkedHashMap<String, Integer> postingsMap, String wordList, File wordListFile) throws IOException {
+		TreeMap<Integer, TreeSet<Integer>> invertedFileMap = new TreeMap<>();
 		if (dir.isDirectory()) {
 			String[] fileNames = dir.list();
 			ArrayList<String> words;
 			String wordLC;
-			TreeSet<String> fileList;
+			TreeSet<Integer> fileList;
 			for (String fileName : fileNames) {
+				int postinId = postingsMap.get(fileName);
 				System.err.println("Analyse du fichier " + fileName);
 				words = normalizer.normalize(new File(dir, fileName));
 				for (String word : words) {
 					wordLC = word;
 					wordLC = wordLC.toLowerCase();
-					fileList = invertedFileMap.get(word);
+					int wordIndex = wordList.indexOf(wordLC);
+					if (wordIndex == -1) {
+						wordIndex = wordList.length();
+						wordList = wordList.concat(wordLC);
+					}
+					fileList = invertedFileMap.get(wordIndex);
 					if (fileList == null) {
 						fileList = new TreeSet<>();
-						fileList.add(fileName);
-						invertedFileMap.put(wordLC, fileList);
+						fileList.add(postinId);
+						invertedFileMap.put(wordIndex, fileList);
 					} else {
-						if (!fileList.contains(fileName)) {
-							fileList.add(fileName);
-							invertedFileMap.put(word, fileList);
+						if (!fileList.contains(postinId)) {
+							fileList.add(postinId);
+							invertedFileMap.put(wordIndex, fileList);
 						}
 
 					}
@@ -169,20 +67,21 @@ public class Utils {
 
 			}
 		}
+		saveWordList(wordList, wordListFile);
 		return invertedFileMap;
 	}
 
-	public static void saveInvertedFile(TreeMap<String, TreeSet<String>> invertedFile, File outFile)
+	public static void saveInvertedFile(TreeMap<Integer, TreeSet<Integer>> invertedFile, File outFile)
 			throws IOException {
 		try {
 			FileWriter fw = new FileWriter(outFile);
 			BufferedWriter bw = new BufferedWriter(fw);
 			PrintWriter out = new PrintWriter(bw);
 			// Ecriture des mots
-			for (String word : invertedFile.keySet()) {
-				TreeSet<String> fileList = invertedFile.get(word);
+			for (int word : invertedFile.keySet()) {
+				TreeSet<Integer> fileList = invertedFile.get(word);
 				String fileListString = "";
-				for (String file : fileList) {
+				for (int file : fileList) {
 					if (fileListString.isEmpty()) {
 						fileListString += file;
 					} else {
@@ -278,23 +177,23 @@ public class Utils {
 		String line1 = null;
 		String[] words2 = null;
 		String[] words1 = null;
-		String word1 = null;
-		String word2 = null;
+		int word1 = -1;
+		int word2 = -1;
 
 		if (sc.hasNext()) {
 			line1 = sc.nextLine();
 			words1 = line1.split("\t");
-			word1 = words1[0];
+			word1 = Integer.valueOf(words1[0]);
 		}
 		String line2 = null;
 		if (sc2.hasNext()) {
 			line2 = sc2.nextLine();
 			words2 = line2.split("\t");
-			word2 = words2[0];
+			word2 = Integer.valueOf(words2[0]);
 		}
 
 		while (line1 != null && line2 != null) {
-			if (word1.equals(word2)) {
+			if (word1 == word2) {
 				Set<String> files = new HashSet<String>(Arrays.asList(words1[2].split(",")));
 				files.addAll(Arrays.asList(words2[2].split(",")));
 				ArrayList<String> sortedFileList = new ArrayList<String>(files);
@@ -314,32 +213,32 @@ public class Utils {
 				if (sc.hasNext()) {
 					line1 = sc.nextLine();
 					words1 = line1.split("\t");
-					word1 = words1[0];
+					word1 = Integer.valueOf(words1[0]);
 				} else {
 					line1 = null;
 				}
 				if (sc2.hasNext()) {
 					line2 = sc2.nextLine();
 					words2 = line2.split("\t");
-					word2 = words2[0];
+					word2 = Integer.valueOf(words2[0]);
 				} else {
 					line2 = null;
 				}
-			} else if (word1.compareTo(word2) < 0) {
+			} else if (word1 < word2) {
 				out.println(line1);
 				if (sc.hasNext()) {
 					line1 = sc.nextLine();
 					words1 = line1.split("\t");
-					word1 = words1[0];
+					word1 = Integer.valueOf(words1[0]);
 				} else {
 					line1 = null;
 				}
-			} else if (word1.compareTo(word2) > 0) {
+			} else if (word1 > word2) {
 				out.println(line2);
 				if (sc2.hasNext()) {
 					line2 = sc2.nextLine();
 					words2 = line2.split("\t");
-					word2 = words2[0];
+					word2 = Integer.valueOf(words2[0]);
 				} else {
 					line2 = null;
 				}
@@ -391,7 +290,7 @@ public class Utils {
 		}
 		br1.close();
 		br2.close();
-		
+
 		for (String word : wordsList) {
 			if (hits1.get(word) != null) {
 				w1 = hits1.get(word);
@@ -490,7 +389,6 @@ public class Utils {
 		}
 		return hits;
 	}
-	
 
 	public static HashMap<String, Double> getTfIdf(File file, HashMap<String, Integer> dfs, int documentNumber,
 			Normalizer normalizer) throws IOException {
@@ -531,52 +429,167 @@ public class Utils {
 		if (!outDir.exists()) {
 			outDir.mkdirs();
 		}
-		
-		// TfIdfs 
+
+		// TfIdfs
 		for (File file : files) {
 			HashMap<String, Double> tfIdfs = getTfIdf(file, dfs, documentNumber, normalizer);
 			TreeSet<String> words = new TreeSet<String>(tfIdfs.keySet());
 			// on écrit dans un fichier
 			try {
-				FileWriter fw = new FileWriter (new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
-				BufferedWriter bw = new BufferedWriter (fw);
-				PrintWriter out = new PrintWriter (bw);
+				FileWriter fw = new FileWriter(new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
+				BufferedWriter bw = new BufferedWriter(fw);
+				PrintWriter out = new PrintWriter(bw);
 				// Ecriture des mots
 				for (String word : words) {
-					out.println(word + "\t" + tfIdfs.get(word)); 
+					out.println(word + "\t" + tfIdfs.get(word));
 				}
 				out.close();
 				bw.close();
 				fw.close();
-			}
-			catch (Exception e){
+			} catch (Exception e) {
 				System.out.println(e.toString());
-			}		
+			}
 		}
 	}
-		
-	
-	//http://stackoverflow.com/questions/106770/standard-concise-way-to-copy-a-file-in-java
-		public static void copyFile(File sourceFile, File destFile) throws IOException {
-		    if(!destFile.exists()) {
-		        destFile.createNewFile();
-		    }
 
-		    FileChannel source = null;
-		    FileChannel destination = null;
-
-		    try {
-		        source = new FileInputStream(sourceFile).getChannel();
-		        destination = new FileOutputStream(destFile).getChannel();
-		        destination.transferFrom(source, 0, source.size());
-		    }
-		    finally {
-		        if(source != null) {
-		            source.close();
-		        }
-		        if(destination != null) {
-		            destination.close();
-		        }
-		    }
+	// http://stackoverflow.com/questions/106770/standard-concise-way-to-copy-a-file-in-java
+	public static void copyFile(File sourceFile, File destFile) throws IOException {
+		if (!destFile.exists()) {
+			destFile.createNewFile();
 		}
+
+		FileChannel source = null;
+		FileChannel destination = null;
+
+		try {
+			source = new FileInputStream(sourceFile).getChannel();
+			destination = new FileOutputStream(destFile).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		} finally {
+			if (source != null) {
+				source.close();
+			}
+			if (destination != null) {
+				destination.close();
+			}
+		}
+	}
+
+	// Construit le dictionnaire indice/nom du fichier
+	public static LinkedHashMap<String, Integer> ConstructPostingsMap(File inDir) throws IOException {
+		LinkedHashMap<String, Integer> postingsMap = new LinkedHashMap<>();
+		if (inDir.isDirectory()) {
+			File[] subDirs = inDir.listFiles();
+
+			for (File subDir : subDirs) {
+				File[] subDirs2 = subDir.listFiles();
+
+				for (File subDir2 : subDirs2) {
+					File[] files = subDir2.listFiles();
+					for (int i = 0; i < files.length; i++) {
+						postingsMap.put(files[i].getName(), i);
+					}
+				}
+			}
+			return postingsMap;
+		}
+
+		return null;
+
+	}
+
+	// Enregistre le dictionnaire indice/nom du fichier
+	public static void savePostingsMap(LinkedHashMap<String, Integer> postingsMap, File outFile) throws IOException {
+		FileWriter fw = new FileWriter(outFile);
+		BufferedWriter bw = new BufferedWriter(fw);
+		PrintWriter out = new PrintWriter(bw);
+		for (String posting_file : postingsMap.keySet()) {
+			out.println(postingsMap.get(posting_file) + "\t" + posting_file);
+		}
+		out.close();
+		bw.close();
+		fw.close();
+	}
+
+	// Récupère le dictionnaire indice/nom du fichier
+	public static LinkedHashMap<Integer, String> getPostingsMap(File inFile) throws IOException {
+		LinkedHashMap<Integer, String> postingsMap = new LinkedHashMap<>();
+		BufferedReader br1 = new BufferedReader(new FileReader(inFile));
+		String line;
+		while ((line = br1.readLine()) != null) {
+			String[] postings = line.split("\t");
+			postingsMap.put(Integer.valueOf(postings[0]), postings[1]);
+
+		}
+		return postingsMap;
+	}
+
+	// Récupérer la chaine wordList de son fichier
+	public static String getWordList(File inFile) throws IOException {
+		FileInputStream fis = new FileInputStream(inFile);
+		byte[] data = new byte[(int) inFile.length()];
+
+		fis.read(data);
+		fis.close();
+
+		String wordList = new String(data, "UTF-8");
+		return wordList;
+	}
+
+	// Enregistre le fichier WordList
+	public static void saveWordList(String wordList, File outFile) throws IOException {
+		PrintWriter writer = new PrintWriter(outFile, "UTF-8");
+		writer.println(wordList);
+		writer.close();
+	}
+
+	// Récupérer un mot à partir de sa postion et de la position du mot suivant
+	// (pour délimiter le mot)
+	public static String getWordWithPosition(int postion, int postion_next, String wordList) {
+		return wordList.substring(postion, postion_next - 1);
+	}
+
+	// Récupérer le DF à partir de l'index des DFs généré grâce à la fonction
+	// getDFIndex
+	public static int getDF(int position, HashMap<Integer, Integer> dfIndex) {
+		return dfIndex.get(position);
+	}
+	
+	//Récupérer l'index nécessaire pour avoir les DF (sans la liste des fichiers)
+
+	public static HashMap<Integer, Integer> getDFIndex(File inFile) throws IOException {
+		HashMap<Integer, Integer> dfIndex = new LinkedHashMap<>();
+		BufferedReader br1 = new BufferedReader(new FileReader(inFile));
+		String line;
+		while ((line = br1.readLine()) != null) {
+			String[] postings = line.split("\t");
+			dfIndex.put(Integer.valueOf(postings[0]), Integer.valueOf(postings[1]));
+
+		}
+		return dfIndex;
+	}
+
+	//Récupérer l'index (position du mot/ liste des indices des fichiers) 
+	//J'ai choisi de stocker la liste des indices des fichiers dans un tableau de int plutôt que dans un TreeSet pour que ça prenne
+	//moins d'espace mémoire (voir cours Objets java pour la RI)
+	
+	public static TreeMap<Integer, int[]> getIndex(File inFile) throws IOException {
+		TreeMap<Integer, int[]> index = new TreeMap<>();
+		BufferedReader br1 = new BufferedReader(new FileReader(inFile));
+		String line;
+		while ((line = br1.readLine()) != null) {
+			String[] indexLine = line.split("\t");
+			String[] postingsString = indexLine[2].split(",");
+			int postingsLength = Integer.valueOf(indexLine[1]);
+			int[] postings = new int[postingsLength];
+			for (int i = 0; i < postingsLength; i++) {
+				postings[i] = Integer.valueOf(postingsString[i]);
+			}
+			index.put(Integer.valueOf(indexLine[0]), postings);
+
+		}
+		return index;
+	}
+	
+
 }
