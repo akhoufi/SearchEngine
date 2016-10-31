@@ -57,9 +57,6 @@ public class IndexGenerator implements Constants {
 	}
 
 	// merge inverted files from dir directory to mergedInvertedFile file
-	// J'utilise 2 fichiers car sinon je vais utiliser le mm fichier comme
-	// entree et sortie de la fusion !
-	// TODO : changer cette méthode ça aprend bcp de temps !!!!
 	public static void mergeManyInvertedFiles(File dir, File mergedInvertedFile) throws IOException {
 		if (dir.isDirectory()) {
 
