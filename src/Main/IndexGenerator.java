@@ -43,19 +43,18 @@ public class IndexGenerator implements Constants {
 
 		if (dir.isDirectory()) {
 			File[] subDirs = dir.listFiles();
-			String wordList;
+			String wordList="";
 			for (File subDir : subDirs) {
 				File[] subDirs2 = subDir.listFiles();
 				for (File subDir2 : subDirs2) {
-					wordList = Utils.getWordList(wordListFile);
 					File outFile = new File(
 							outDir.getPath() + "/" + subDir.getName() + "_" + subDir2.getName() + ".ind");
-					invertedFile = Utils.getInvertedFile(subDir2, normalizer, postingsMap, wordList, wordListFile);
-					Utils.saveInvertedFile(invertedFile, outFile);
+					wordList = Utils.getInvertedFile(subDir2, normalizer, postingsMap, wordList, wordListFile,outFile);
 
 				}
 
 			}
+			Utils.saveWordList(wordList, wordListFile);
 
 		}
 
@@ -220,30 +219,30 @@ public class IndexGenerator implements Constants {
 			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
 
 			// Construct and save postings (files) index
-//			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
-//			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
-//			File wordListFile=new File(WORD_LIST_FILE);
-//			wordListFile.createNewFile();
-//			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
-//					postingsMap, wordListFile);
+			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
+			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
+			File wordListFile=new File(WORD_LIST_FILE);
+			wordListFile.createNewFile();
+			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
+					postingsMap, wordListFile);
 //			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
 //					postingsMap, wordListFile);
-
-			 //MergeManyInvertedFiles
-			 File outStemDir = new File(FINAL_INDEX_STEM_DIR);
-			 if (!outStemDir.exists()) {
-			 outStemDir.mkdir();
-			 }
+//
+//			 //MergeManyInvertedFiles
+//			 File outStemDir = new File(FINAL_INDEX_STEM_DIR);
+//			 if (!outStemDir.exists()) {
+//			 outStemDir.mkdir();
+//			 }
+//			
+//			 File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
+//			 if (!outTokenDir.exists()) {
+//			 outTokenDir.mkdir();
+//			 }
 			
-			 File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
-			 if (!outTokenDir.exists()) {
-			 outTokenDir.mkdir();
-			 }
-			
-			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
-			 File(FINAL_STEM_INDEX));
-//			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new
-//			 File(FINAL_TOKEN_INDEX));
+//			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
+//			 File(FINAL_STEM_INDEX));
+			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new
+			 File(FINAL_TOKEN_INDEX));
 
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -31,8 +31,8 @@ import java.util.TreeSet;
 
 public class Utils {
 
-	public static TreeMap<Integer, TreeSet<Integer>> getInvertedFile(File dir, Normalizer normalizer,
-			LinkedHashMap<String, Integer> postingsMap, String wordList, File wordListFile) throws IOException {
+	public static String getInvertedFile(File dir, Normalizer normalizer, LinkedHashMap<String, Integer> postingsMap,
+			String wordList, File wordListFile, File outFile) throws IOException {
 		TreeMap<Integer, TreeSet<Integer>> invertedFileMap = new TreeMap<>();
 		if (dir.isDirectory()) {
 			String[] fileNames = dir.list();
@@ -47,9 +47,14 @@ public class Utils {
 					wordLC = word;
 					wordLC = wordLC.toLowerCase();
 					int wordIndex = wordList.indexOf(wordLC);
-					if (wordIndex == -1) {
+					boolean wordFound = validateWordPosition(wordLC, wordList, wordIndex);
+					while (!wordFound && wordIndex != -1) {
+						wordIndex = wordList.indexOf(wordLC, wordIndex + wordLC.length());
+						wordFound = validateWordPosition(wordLC, wordList, wordIndex);
+					}
+					if (!wordFound) {
 						wordIndex = wordList.length();
-						wordList = wordList.concat(wordLC);
+						wordList = wordList.concat(wordLC + "\0");
 					}
 					fileList = invertedFileMap.get(wordIndex);
 					if (fileList == null) {
@@ -67,8 +72,8 @@ public class Utils {
 
 			}
 		}
-		saveWordList(wordList, wordListFile);
-		return invertedFileMap;
+		saveInvertedFile(invertedFileMap, outFile);
+		return wordList;
 	}
 
 	public static void saveInvertedFile(TreeMap<Integer, TreeSet<Integer>> invertedFile, File outFile)
@@ -554,8 +559,9 @@ public class Utils {
 	public static int getDF(int position, HashMap<Integer, Integer> dfIndex) {
 		return dfIndex.get(position);
 	}
-	
-	//Récupérer l'index nécessaire pour avoir les DF (sans la liste des fichiers)
+
+	// Récupérer l'index nécessaire pour avoir les DF (sans la liste des
+	// fichiers)
 
 	public static HashMap<Integer, Integer> getDFIndex(File inFile) throws IOException {
 		HashMap<Integer, Integer> dfIndex = new LinkedHashMap<>();
@@ -569,10 +575,11 @@ public class Utils {
 		return dfIndex;
 	}
 
-	//Récupérer l'index (position du mot/ liste des indices des fichiers) 
-	//J'ai choisi de stocker la liste des indices des fichiers dans un tableau de int plutôt que dans un TreeSet pour que ça prenne
-	//moins d'espace mémoire (voir cours Objets java pour la RI)
-	
+	// Récupérer l'index (position du mot/ liste des indices des fichiers)
+	// J'ai choisi de stocker la liste des indices des fichiers dans un tableau
+	// de int plutôt que dans un TreeSet pour que ça prenne
+	// moins d'espace mémoire (voir cours Objets java pour la RI)
+
 	public static TreeMap<Integer, int[]> getIndex(File inFile) throws IOException {
 		TreeMap<Integer, int[]> index = new TreeMap<>();
 		BufferedReader br1 = new BufferedReader(new FileReader(inFile));
@@ -590,6 +597,19 @@ public class Utils {
 		}
 		return index;
 	}
-	
 
+	public static boolean validateWordPosition(String word, String wordList, int position) {
+		if (position == 0 && wordList.charAt(word.length()) == '\0') {
+			return true;
+		}
+		if (position != -1 && position == (wordList.length() - word.length())
+				&& wordList.charAt(position-1) == '\0') {
+			return true;
+		}
+		if (position != -1 && wordList.charAt(position - 1) == '\0'
+				&& wordList.charAt(position + word.length()) == '\0') {
+			return true;
+		}
+		return false;
+	}
 }

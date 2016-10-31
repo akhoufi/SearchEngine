@@ -67,10 +67,11 @@ public class SearchEngine implements Constants {
 		return pages;
 	}
 
-	//On considère la requete comme un document et on calcul son .poids et on 
-	// le met a cote des autres (dans le dossier weights : query.poids)	
-	public static void saveQueryWeights(String query, File invertedFile, File textDirectory, File outDir, Normalizer normalizer) throws IOException {
-	
+	// On considère la requete comme un document et on calcul son .poids et on
+	// le met a cote des autres (dans le dossier weights : query.poids)
+	public static void saveQueryWeights(String query, File invertedFile, File textDirectory, File outDir,
+			Normalizer normalizer) throws IOException {
+
 		ArrayList<String> keyWords = normalizer.normalize(query);
 		HashMap<String, Integer> dfs = IndexGenerator.getDft(invertedFile);
 		int documentNumber = IndexGenerator.getNbDocuments(textDirectory);
@@ -79,30 +80,28 @@ public class SearchEngine implements Constants {
 		}
 		// on écrit dans un fichier
 		try {
-			FileWriter fw = new FileWriter (new File(outDir.getAbsolutePath()+"/query.poids"));
-			BufferedWriter bw = new BufferedWriter (fw);
-			PrintWriter out = new PrintWriter (bw);
+			FileWriter fw = new FileWriter(new File(outDir.getAbsolutePath() + "/query.poids"));
+			BufferedWriter bw = new BufferedWriter(fw);
+			PrintWriter out = new PrintWriter(bw);
 			Integer tf;
 			Double tfIdf;
 			// Ecriture des mots
-			for(String keyWord : keyWords){
+			for (String keyWord : keyWords) {
 				tf = 1;
 				tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(keyWord));
-				out.println(keyWord + "\t" + tfIdf); 
+				out.println(keyWord + "\t" + tfIdf);
 			}
 			out.close();
 			bw.close();
 			fw.close();
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			System.out.println(e.toString());
 		}
 	}
 
-
 	// Classement des pages repondant à la requete par similarite decroissante
-	//   dans un fichier outFile
-	// inDir : contient tous les fichiers .poids 
+	// dans un fichier outFile
+	// inDir : contient tous les fichiers .poids
 	public static void getSimilarPages(File inDir, File outFile) throws IOException {
 		File query = new File(inDir.getAbsolutePath() + "/query.poids");
 		File[] files = inDir.listFiles();
@@ -113,8 +112,6 @@ public class SearchEngine implements Constants {
 
 	}
 
-
-	
 	// Choisir les pages les plus similaires à afficher
 	// TODO
 	public static void getPagesToDisplay() throws IOException {
@@ -163,7 +160,8 @@ public class SearchEngine implements Constants {
 		Set<String> pagesList = new HashSet<>();
 		File results = new File(RESULTS_DIR + "/results.txt");
 		pagesList = getPages(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), stemmer);
-		saveQueryWeights(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), new File(TEXT_DIR), new File(WEIGHT_FILES_FIR), stemmer);
+		saveQueryWeights(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), new File(TEXT_DIR),
+				new File(WEIGHT_FILES_FIR), stemmer);
 		getSimilarPages(new File(WEIGHT_FILES_FIR), results);
 
 	}
