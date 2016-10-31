@@ -65,10 +65,10 @@ public class IndexGenerator implements Constants {
 
 			File[] files = dir.listFiles();
 			ArrayList<File> subListFiles = new ArrayList<File>();
-
+int j=0;
 			while (files.length != 1) {
 				subListFiles = new ArrayList<File>();
-				for (int i = 0, j = 0; i < files.length; i = i + 2, j++) {
+				for (int i = 0; i < files.length; i = i + 2, j++) {
 					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + ".ind");
 					if (i + 1 == files.length) {
 						System.out.println("Adding " + files[i].getName());
@@ -212,7 +212,7 @@ public class IndexGenerator implements Constants {
 		// SaveInvertedFilesByPacks
 		try {
 			Normalizer stemmer = new FrenchStemmer();
-			saveInvertedFileByPack(new File(TEXT_DIR), stemmer, new File(INVERTED_INDEXES_DIR));
+			//saveInvertedFileByPack(new File(TEXT_DIR), stemmer, new File(INVERTED_INDEXES_DIR));
 
 			// MergeManyInvertedFiles
 			File outDir = new File(FINAL_INDEX_DIR);
