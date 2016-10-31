@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import Common.Utils;
 import Common.Constants;
 import Common.FrenchStemmer;
+import Common.FrenchTokenizer;
 import Common.Normalizer;
 
 public class IndexGenerator implements Constants {
@@ -62,11 +63,12 @@ public class IndexGenerator implements Constants {
 
 			File[] files = dir.listFiles();
 			ArrayList<File> subListFiles = new ArrayList<File>();
-int j=0;
+
 			while (files.length != 1) {
+				int k = 0;
 				subListFiles = new ArrayList<File>();
-				for (int i = 0; i < files.length; i = i + 2, j++) {
-					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + ".ind");
+				for (int i = 0, j = 0; i < files.length; i = i + 2, j++) {
+					File temp = new File(mergedInvertedFile.getParentFile() + "/" + j + "_" + k++ + ".ind");
 					if (i + 1 == files.length) {
 						System.out.println("Adding " + files[i].getName());
 						subListFiles.add(files[i]);
@@ -208,16 +210,24 @@ int j=0;
 	public static void main(String[] args) throws IOException {
 		// SaveInvertedFilesByPacks
 		try {
-			Normalizer stemmer = new FrenchStemmer();
-			//saveInvertedFileByPack(new File(TEXT_DIR), stemmer, new File(INVERTED_INDEXES_DIR));
+			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
+			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR));
+			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR));
 
 			// MergeManyInvertedFiles
-			File outDir = new File(FINAL_INDEX_DIR);
-			if (!outDir.exists()) {
-				outDir.mkdir();
+			File outStemDir = new File(FINAL_INDEX_STEM_DIR);
+			if (!outStemDir.exists()) {
+				outStemDir.mkdir();
 			}
-			String mergedFile = FINAL_INDEX_DIR + "/index.ind";
-			mergeManyInvertedFiles(new File(INVERTED_INDEXES_DIR), new File(mergedFile));
+
+			File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
+			if (!outTokenDir.exists()) {
+				outTokenDir.mkdir();
+			}
+
+			mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new File(FINAL_STEM_INDEX));
+			mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX));
 
 		} catch (IOException e) {
 			e.printStackTrace();
