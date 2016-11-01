@@ -128,7 +128,7 @@ public class SearchEngine implements Constants {
 
 				Integer number;
 				for (String fileName : fileNames) {
-					File fXmlFile = new File(SUB_INDEX_DIR);
+					File fXmlFile = new File(SUB_INDEX_DIR+"fileName");
 					DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder dBuilder;
 					dBuilder = dbFactory.newDocumentBuilder();
