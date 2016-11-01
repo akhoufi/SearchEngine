@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,71 +26,84 @@ import org.w3c.dom.NodeList;
 
 import Common.Constants;
 import Common.FrenchStemmer;
+import Common.FrenchTokenizer;
 import Common.Normalizer;
 import Common.Utils;
 
 public class SearchEngine implements Constants {
-	// Find pages containing the query keywords and returns their names
-	// A optimiser ulterieurement, ne pas parcourir touuuuut l'index, A faire
-	// plus tard si on arrive à avoir une première version du moteur
-	public static Set<String> getPages(String query, File invertedFile, Normalizer normalizer)
-			throws FileNotFoundException {
-		Set<String> pages = new HashSet<>();
-		ArrayList<String> keyWordsList = normalizer.normalize(query.toLowerCase());
+	// Cherche les pages contenant les mots clées et retournent un Set<File> des
+		//  .poids correspondant à ces pages
+		public static Set<File> getPages(String query, File invertedFile, File postingFile, File weightsDir, String wordList, Normalizer normalizer)
+				throws IOException {
+			Set<File> pages = new HashSet<>();
+			ArrayList<String> keyWordsList = normalizer.normalize(query.toLowerCase());
+			ArrayList<Integer> keyWordsPos = new ArrayList<Integer>();		 
+			LinkedHashMap<Integer, String> positionMap = Utils.getPostingsMap(postingFile);
+			String line = null;
+			String[] words = null;
+			String wordInd = null;
+			String[] documentsIndexes;
+			String page;
 
-		String line = null;
-		String[] words = null;
-		String word = null;
-		String[] documents = null;
-
-		Scanner sc = new java.util.Scanner(invertedFile);
-
-		while (sc.hasNext()) {
-			line = sc.nextLine();
-			words = line.split("\t");
-			word = words[0];
+			Scanner sc = new java.util.Scanner(invertedFile);
 
 			for (String keyWord : keyWordsList) {
-				if (word.equals(keyWord)) {
-					documents = words[2].split(",");
-					for (String page : documents) {
-						pages.add(page);
+				keyWordsPos.add(Utils.getWordPosition(wordList, keyWord));
+			}
+			
+			while (sc.hasNext()) {
+				line = sc.nextLine();
+				words = line.split("\t");
+				wordInd = words[0];
 
+				for (Integer wordPos : keyWordsPos) {
+					if (wordInd.equals(String.valueOf(wordPos))) {
+						documentsIndexes = words[2].split(",");
+						for (String docIndex : documentsIndexes) {
+							page = positionMap.get(Integer.valueOf(docIndex));
+							page = weightsDir.getAbsolutePath()+"/"+page.replaceAll(".txt$", ".poids");		
+							pages.add(new File(page));
+						}
 					}
-
 				}
+
 			}
 
+			sc.close();
+
+			return pages;
 		}
 
-		sc.close();
-
-		return pages;
-	}
-
-	// On considère la requete comme un document et on calcul son .poids et on
-	// le met a cote des autres (dans le dossier weights : query.poids)
-	public static void saveQueryWeights(String query, File invertedFile, File textDirectory, File outDir,
+	// On considère la requete comme un document et on calcule son .poids et on
+	// l'enregistre dans le dossier outDir
+	public static void saveQueryWeights(String query, String wordList, File invertedFile, File textDirectory, File outDir,
 			Normalizer normalizer) throws IOException {
 
 		ArrayList<String> keyWords = normalizer.normalize(query);
-		HashMap<String, Integer> dfs = IndexGenerator.getDft(invertedFile);
+		HashMap<Integer, Integer> dfs = Utils.getDFIndex(invertedFile);
 		int documentNumber = IndexGenerator.getNbDocuments(textDirectory);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
 		}
 		// on écrit dans un fichier
 		try {
-			FileWriter fw = new FileWriter(new File(outDir.getAbsolutePath() + "/query.poids"));
+			File queryFile = new File(outDir.getAbsolutePath() + "/query.poids");
+			if (queryFile.exists()) {
+				queryFile.delete();
+			}
+			queryFile.createNewFile();
+			FileWriter fw = new FileWriter(queryFile);
 			BufferedWriter bw = new BufferedWriter(fw);
 			PrintWriter out = new PrintWriter(bw);
 			Integer tf;
+			Integer keyWordInd;
 			Double tfIdf;
 			// Ecriture des mots
 			for (String keyWord : keyWords) {
+				keyWordInd = Utils.getWordPosition(wordList, keyWord);
 				tf = 1;
 				tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(keyWord));
-				out.println(keyWord + "\t" + tfIdf);
+				out.println(keyWordInd + "\t" + tfIdf);
 			}
 			out.close();
 			bw.close();
@@ -98,24 +112,13 @@ public class SearchEngine implements Constants {
 			System.out.println(e.toString());
 		}
 	}
-
+	
 	// Classement des pages repondant à la requete par similarite decroissante
 	// dans un fichier outFile
-	// inDir : contient tous les fichiers .poids
-	public static void getSimilarPages(File inDir, File outFile) throws IOException {
-		File query = new File(inDir.getAbsolutePath() + "/query.poids");
-		File[] files = inDir.listFiles();
-		Set<File> file_list = new HashSet<File>(Arrays.asList(files));
-		file_list.remove(query); // On supprime query pour ne pas calculer la
-									// similarite entre le mm fichier
-		Utils.getSimilarDocuments(query, file_list, outFile);
-
-	}
-
-	// Choisir les pages les plus similaires à afficher
-	// TODO
-	public static void getPagesToDisplay() throws IOException {
-
+	// wieghtsFilesList : Set<File> contenant les file .poids contenant un des mots
+	//  clées de la requete
+	public static void getSimilarPages(File queryWeights ,Set<File> wieghtsFilesList, File outFile) throws IOException {	
+		Utils.getSimilarDocuments(queryWeights, wieghtsFilesList, outFile);
 	}
 
 	// Faire la liaison entre les noms de hashage et le nom de ces pages pour
@@ -128,7 +131,7 @@ public class SearchEngine implements Constants {
 
 				Integer number;
 				for (String fileName : fileNames) {
-					File fXmlFile = new File(SUB_INDEX_DIR+"fileName");
+					File fXmlFile = new File(SUB_INDEX_DIR);
 					DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder dBuilder;
 					dBuilder = dbFactory.newDocumentBuilder();
@@ -154,15 +157,36 @@ public class SearchEngine implements Constants {
 	}
 
 	public static void main(String[] args) throws IOException {
-		// test de la réponse à une requete
-		Normalizer stemmer = new FrenchStemmer();
-		String query = "charlie hebdo";
-		Set<String> pagesList = new HashSet<>();
-		File results = new File(RESULTS_DIR + "/results.txt");
-		pagesList = getPages(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), stemmer);
-		saveQueryWeights(query, new File(FINAL_INDEX_STEM_DIR + "/index.ind"), new File(TEXT_DIR),
-				new File(WEIGHT_FILES_FIR), stemmer);
-		getSimilarPages(new File(WEIGHT_FILES_FIR), results);
+		
+		try {
+			String query = "charlie hebdo";
+			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+			
+			File invertedFile = new File(FINAL_TOKEN_INDEX); 
+			File postingFile = new File(POSTING_INDEX_FILE);
+			File weightsDir = new File(FINAL_INDEX_TOKEN_DIR);
+			File wordListFile = new File(WORD_LIST_TOKEN_FILE);
+			File textDir = new File(TEXT_DIR);
+			File queryWeightDir = new File(QUERY_WEIGHTS_DIR);
+			File resultsFile = new File(RESULTS_DIR + "/results.txt");
 
+			String wordList = Utils.getWordList(wordListFile); 
+			
+			Set<File> pagesList = getPages(query, invertedFile, postingFile, weightsDir, wordList,
+									tokenizerNoStopWords);
+			
+			saveQueryWeights(query, wordList, invertedFile, textDir, queryWeightDir,
+					tokenizerNoStopWords);
+			
+			File queryWeightsFile = new File(queryWeightDir.getAbsolutePath()+"/query.poids");
+			
+			getSimilarPages(queryWeightsFile, pagesList, resultsFile);
+			
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
