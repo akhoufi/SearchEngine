@@ -222,6 +222,9 @@ public class IndexGenerator implements Constants {
 			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
 			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
 			File wordListFile=new File(WORD_LIST_FILE);
+			if(wordListFile.exists()){
+				wordListFile.delete();
+			}
 			wordListFile.createNewFile();
 			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
 					postingsMap, wordListFile);
