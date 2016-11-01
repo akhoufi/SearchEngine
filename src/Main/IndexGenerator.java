@@ -113,61 +113,61 @@ public class IndexGenerator implements Constants {
 
 	}
 
-	// Gets document frequency of words using the index generated, unlike what
-	// we did in TP
-	//Je n'ai pas changé cette méthode (à toi de l'adapter, j'ai créé une fonction dans Utils qui récupère l'index nécessaire pour les DF (getDFIndex) 
-	//Mais il est en <Integer, Integer> car je garde le mot en tant que position (comme on en a parlé) 
-	public static HashMap<String, Integer> getDft(File invertedFile) throws IOException {
-		HashMap<String, Integer> hits = new HashMap<String, Integer>();
-		String line = null;
-		String[] words = null;
-		Scanner sc = new java.util.Scanner(invertedFile);
-
-		while (sc.hasNext()) {
-			line = sc.nextLine();
-			words = line.split("\t");
-			hits.put(words[0], Integer.parseInt(words[1]));
-
-		}
-		sc.close();
-
-		return hits;
-	}
-
-	// Gets document frequency of a word using the index generated
-	public static Integer getDfOfWord(File invertedFile, String word) throws IOException {
-		String line = null;
-		String[] words = null;
-		Scanner sc = new java.util.Scanner(invertedFile);
-		Integer dft = 0;
-		while (sc.hasNext()) {
-			line = sc.nextLine();
-			words = line.split("\t");
-			if (word.equals(words[0])) {
-				dft = Integer.parseInt(words[1]);
-				sc.close();
-				return dft;
-			}
-		}
-		if (dft == 0) {
-			System.out.println(word + " getDfOfT() = 0 ");
-		}
-		sc.close();
-
-		return dft;
-	}
+//	// Gets document frequency of words using the index generated, unlike what
+//	// we did in TP
+//	//Je n'ai pas changé cette méthode (à toi de l'adapter, j'ai créé une fonction dans Utils qui récupère l'index nécessaire pour les DF (getDFIndex) 
+//	//Mais il est en <Integer, Integer> car je garde le mot en tant que position (comme on en a parlé) 
+//	public static HashMap<String, Integer> getDft(File invertedFile) throws IOException {
+//		HashMap<String, Integer> hits = new HashMap<String, Integer>();
+//		String line = null;
+//		String[] words = null;
+//		Scanner sc = new java.util.Scanner(invertedFile);
+//
+//		while (sc.hasNext()) {
+//			line = sc.nextLine();
+//			words = line.split("\t");
+//			hits.put(words[0], Integer.parseInt(words[1]));
+//
+//		}
+//		sc.close();
+//
+//		return hits;
+//	}
+//
+//	// Gets document frequency of a word using the index generated
+//	public static Integer getDfOfWord(File invertedFile, String word) throws IOException {
+//		String line = null;
+//		String[] words = null;
+//		Scanner sc = new java.util.Scanner(invertedFile);
+//		Integer dft = 0;
+//		while (sc.hasNext()) {
+//			line = sc.nextLine();
+//			words = line.split("\t");
+//			if (word.equals(words[0])) {
+//				dft = Integer.parseInt(words[1]);
+//				sc.close();
+//				return dft;
+//			}
+//		}
+//		if (dft == 0) {
+//			System.out.println(word + " getDfOfT() = 0 ");
+//		}
+//		sc.close();
+//
+//		return dft;
+//	}
 
 	// Creates the .poids files of each page in the corpus
 	// inDir : textDir
 	// outDir : weightsDir
 	// invertedFile : index file of the whole corpus
-	public static void saveWeightFiles(File inDir, File outDir, File invertedFile, Normalizer normalizer)
+	public static void saveWeightFiles(File inDir, File outDir, File invertedFile, String wordList, Normalizer normalizer)
 			throws IOException {
 
 		File[] files = null;
 		// calcul des dfs
-		System.out.println("Calcul des dfs \n");
-		HashMap<String, Integer> dfs = getDft(invertedFile);
+		System.out.println("Recuperation des dfs a partir de l'index \n");
+		HashMap<Integer, Integer> dfs = Utils.getDFIndex(invertedFile);
 		// Nombre de documents
 		System.out.println("Calcul du nb des documents \n");
 		int documentNumber = getNbDocuments(inDir);
@@ -178,7 +178,7 @@ public class IndexGenerator implements Constants {
 
 		File[] subDirs = inDir.listFiles();
 
-		System.out.println("Creation des .poids \n");
+		System.out.println("Debut de Creation des .poids \n");
 
 		for (File subDir : subDirs) {
 			File[] subDirs2 = subDir.listFiles();
@@ -186,18 +186,18 @@ public class IndexGenerator implements Constants {
 			for (File subDir2 : subDirs2) {
 				files = subDir2.listFiles();
 				// TfIdfs
-				System.out.println("Creation des .poids \n");
 				for (File file : files) {
-					HashMap<String, Double> tfIdfs = Utils.getTfIdf(file, dfs, documentNumber, normalizer);
-					TreeSet<String> words = new TreeSet<String>(tfIdfs.keySet());
+					System.out.println("Creation de .poids de : " + file.getName());
+					HashMap<Integer, Double> tfIdfs = Utils.getTfIdf(file, wordList, dfs, documentNumber, normalizer);
+					TreeSet<Integer> wordsInd = new TreeSet<Integer>(tfIdfs.keySet());
 					// on écrit dans un fichier
 					try {
 						FileWriter fw = new FileWriter(new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
 						BufferedWriter bw = new BufferedWriter(fw);
 						PrintWriter out = new PrintWriter(bw);
 						// Ecriture des mots
-						for (String word : words) {
-							out.println(word + "\t" + tfIdfs.get(word));
+						for (Integer wordInd : wordsInd) {
+							out.println(wordInd + "\t" + tfIdfs.get(wordInd));
 						}
 						out.close();
 						bw.close();
@@ -256,5 +256,23 @@ public class IndexGenerator implements Constants {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
+		if(false){
+			//Creation des poids  token
+			String wordList = Utils.getWordList(new File(WORD_LIST_TOKEN_FILE));
+			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX), wordList, tokenizerNoStopWords);
+			
+		}
+		
+		if(true){
+			//Creation des poids  stem
+			String wordList = Utils.getWordList(new File(WORD_LIST_STEM_FILE));
+			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
+			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_STEM_DIR), new File(FINAL_STEM_INDEX), wordList, stemmerNoStopWords);
+			
+		}
+		
 	}
 }
