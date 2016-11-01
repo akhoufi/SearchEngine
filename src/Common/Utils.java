@@ -602,11 +602,10 @@ public class Utils {
 		if (position == 0 && wordList.charAt(word.length()) == '\0') {
 			return true;
 		}
-		if (position != -1 && position == (wordList.length() - word.length())
-				&& wordList.charAt(position-1) == '\0') {
+		if (position > 0 && position == (wordList.length() - word.length()) && wordList.charAt(position - 1) == '\0') {
 			return true;
 		}
-		if (position != -1 && wordList.charAt(position - 1) == '\0'
+		if (position > 0 && wordList.charAt(position - 1) == '\0'
 				&& wordList.charAt(position + word.length()) == '\0') {
 			return true;
 		}
