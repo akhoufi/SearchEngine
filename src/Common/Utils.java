@@ -395,32 +395,34 @@ public class Utils {
 		return hits;
 	}
 
-	public static HashMap<String, Double> getTfIdf(File file, HashMap<String, Integer> dfs, int documentNumber,
+	public static HashMap<Integer, Double> getTfIdf(File file, String wordList, HashMap<Integer, Integer> dfs, int documentNumber,
 			Normalizer normalizer) throws IOException {
-		HashMap<String, Integer> hits = new HashMap<String, Integer>();
+		HashMap<Integer, Integer> hits = new HashMap<Integer, Integer>();
 		ArrayList<String> words = normalizer.normalize(file);
 		Integer number;
+		int wordIndex;
 
 		for (String word : words) {
 			word = word.toLowerCase();
-			number = hits.get(word);
+			wordIndex = getWordPosition(wordList, word);
+			number = hits.get(wordIndex);
 			if (number == null) {
-				hits.put(word, 1);
+				hits.put(wordIndex, 1);
 			} else {
-				hits.put(word, ++number);
+				hits.put(wordIndex, ++number);
 			}
 		}
 
 		Integer tf;
 		Double tfIdf;
-		String word;
-		HashMap<String, Double> tfIdfs = new HashMap<String, Double>();
+		Integer wordInd;
+		HashMap<Integer, Double> tfIdfs = new HashMap<Integer, Double>();
 
-		for (Map.Entry<String, Integer> hit : hits.entrySet()) {
+		for (Map.Entry<Integer, Integer> hit : hits.entrySet()) {
 			tf = hit.getValue();
-			word = hit.getKey();
-			tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(word));
-			tfIdfs.put(word, tfIdf);
+			wordInd = hit.getKey();
+			tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(wordInd));
+			tfIdfs.put(wordInd, tfIdf);
 		}
 		return tfIdfs;
 	}
@@ -598,6 +600,26 @@ public class Utils {
 		return index;
 	}
 
+	
+	public static int  getWordPosition(String wordList, String wordLC){
+		int wordIndex = wordList.indexOf(wordLC);
+		boolean wordFound = validateWordPosition(wordLC, wordList, wordIndex);
+		while (!wordFound && wordIndex != -1) {
+			wordIndex = wordList.indexOf(wordLC, wordIndex + wordLC.length());
+			wordFound = validateWordPosition(wordLC, wordList, wordIndex);
+		}
+		
+		if (!wordFound) {
+			wordIndex = -1;
+		}
+		
+		if (wordIndex == -1){
+			System.out.println("------------------> Pobleme : word not found in wordlist");
+		}
+		
+		return wordIndex;
+		}
+	
 	public static boolean validateWordPosition(String word, String wordList, int position) {
 		if (position == 0 && wordList.charAt(word.length()) == '\0') {
 			return true;
