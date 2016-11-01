@@ -29,6 +29,8 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import Common.ValueComparator;
+
 public class Utils {
 
 	public static String getInvertedFile(File dir, Normalizer normalizer, LinkedHashMap<String, Integer> postingsMap,
@@ -273,10 +275,84 @@ public class Utils {
 		fw.close();
 	}
 
+//	public static double getSimilarity(File file1, File file2) throws IOException {
+//		HashMap<String, Double> hits1 = new HashMap<String, Double>();
+//		HashMap<String, Double> hits2 = new HashMap<String, Double>();
+//		TreeSet<String> wordsList = new TreeSet<String>();
+//		BufferedReader br1 = new BufferedReader(new FileReader(file1));
+//		BufferedReader br2 = new BufferedReader(new FileReader(file2));
+//		String line = br1.readLine();
+//		String[] wordTfId = null;
+//		double num = 0.0, denom1 = 0.0, denom2 = 0.0, w1, w2;
+//
+//		while ((line = br1.readLine()) != null) {
+//			wordTfId = line.split("\t");
+//			wordsList.add(wordTfId[0]);
+//			hits1.put(wordTfId[0], Double.parseDouble(wordTfId[1]));
+//		}
+//		while ((line = br2.readLine()) != null) {
+//			wordTfId = line.split("\t");
+//			wordsList.add(wordTfId[0]);
+//			hits2.put(wordTfId[0], Double.parseDouble(wordTfId[1]));
+//		}
+//		br1.close();
+//		br2.close();
+//
+//		for (String word : wordsList) {
+//			if (hits1.get(word) != null) {
+//				w1 = hits1.get(word);
+//
+//			} else {
+//				w1 = 0.0;
+//			}
+//
+//			if (hits2.get(word) != null) {
+//				w2 = hits2.get(word);
+//
+//			} else {
+//				w2 = 0.0;
+//			}
+//
+//			num += w1 * w2;
+//			denom1 += w1 * w1;
+//			denom2 += w2 * w2;
+//
+//		}
+//
+//		return num / (Math.sqrt(denom1) * Math.sqrt(denom2));
+//
+//	}
+//
+//	public static void getSimilarDocuments(File file, Set<File> fileList, File outFile) throws IOException {
+//		HashMap<String, Double> hits = new HashMap<String, Double>();
+//		String fileName = null;
+//		double similarity;
+//
+//		for (File file2 : fileList) {
+//			hits.put(file2.getName(), getSimilarity(file, file2));
+//		}
+//
+//		Comparator<String> comparator = new ValueComparator<String, Double>(hits);
+//		TreeMap<String, Double> sortedHits = new TreeMap<String, Double>(comparator);
+//		sortedHits.putAll(hits);
+//
+//		FileWriter fw = new FileWriter(outFile);
+//		BufferedWriter bw = new BufferedWriter(fw);
+//		PrintWriter out = new PrintWriter(bw);
+//		for (Map.Entry<String, Double> hit : sortedHits.entrySet()) {
+//			fileName = hit.getKey();
+//			similarity = hit.getValue();
+//			out.println(fileName + "\t" + similarity);
+//		}
+//		out.close();
+//		bw.close();
+//		fw.close();
+//	}
+
 	public static double getSimilarity(File file1, File file2) throws IOException {
-		HashMap<String, Double> hits1 = new HashMap<String, Double>();
-		HashMap<String, Double> hits2 = new HashMap<String, Double>();
-		TreeSet<String> wordsList = new TreeSet<String>();
+		HashMap<Integer, Double> hits1 = new HashMap<Integer, Double>();
+		HashMap<Integer, Double> hits2 = new HashMap<Integer, Double>();
+		TreeSet<Integer> wordsList = new TreeSet<Integer>();
 		BufferedReader br1 = new BufferedReader(new FileReader(file1));
 		BufferedReader br2 = new BufferedReader(new FileReader(file2));
 		String line = br1.readLine();
@@ -285,27 +361,27 @@ public class Utils {
 
 		while ((line = br1.readLine()) != null) {
 			wordTfId = line.split("\t");
-			wordsList.add(wordTfId[0]);
-			hits1.put(wordTfId[0], Double.parseDouble(wordTfId[1]));
+			wordsList.add(Integer.valueOf(wordTfId[0]));
+			hits1.put(Integer.valueOf(wordTfId[0]), Double.parseDouble(wordTfId[1]));
 		}
 		while ((line = br2.readLine()) != null) {
 			wordTfId = line.split("\t");
-			wordsList.add(wordTfId[0]);
-			hits2.put(wordTfId[0], Double.parseDouble(wordTfId[1]));
+			wordsList.add(Integer.valueOf(wordTfId[0]));
+			hits2.put(Integer.valueOf(wordTfId[0]), Double.parseDouble(wordTfId[1]));
 		}
 		br1.close();
 		br2.close();
 
-		for (String word : wordsList) {
-			if (hits1.get(word) != null) {
-				w1 = hits1.get(word);
+		for (Integer wordInd : wordsList) {
+			if (hits1.get(wordInd) != null) {
+				w1 = hits1.get(wordInd);
 
 			} else {
 				w1 = 0.0;
 			}
 
-			if (hits2.get(word) != null) {
-				w2 = hits2.get(word);
+			if (hits2.get(wordInd) != null) {
+				w2 = hits2.get(wordInd);
 
 			} else {
 				w2 = 0.0;
@@ -320,7 +396,8 @@ public class Utils {
 		return num / (Math.sqrt(denom1) * Math.sqrt(denom2));
 
 	}
-
+	
+	
 	public static void getSimilarDocuments(File file, Set<File> fileList, File outFile) throws IOException {
 		HashMap<String, Double> hits = new HashMap<String, Double>();
 		String fileName = null;
@@ -333,7 +410,13 @@ public class Utils {
 		Comparator<String> comparator = new ValueComparator<String, Double>(hits);
 		TreeMap<String, Double> sortedHits = new TreeMap<String, Double>(comparator);
 		sortedHits.putAll(hits);
-
+		
+		
+		if (outFile.exists()) {
+			outFile.delete();
+		}
+		outFile.createNewFile();
+		
 		FileWriter fw = new FileWriter(outFile);
 		BufferedWriter bw = new BufferedWriter(fw);
 		PrintWriter out = new PrintWriter(bw);
@@ -346,7 +429,7 @@ public class Utils {
 		bw.close();
 		fw.close();
 	}
-
+	
 	public static HashMap<String, Integer> getTermFrequencies(File file, Normalizer normalizer) throws IOException {
 		HashMap<String, Integer> hits = new HashMap<String, Integer>();
 		ArrayList<String> words = normalizer.normalize(file);
@@ -427,37 +510,37 @@ public class Utils {
 		return tfIdfs;
 	}
 
-	public static void getWeightFiles(File inDir, File outDir, Normalizer normalizer) throws IOException {
-		// calcul des dfs
-		HashMap<String, Integer> dfs = getDocumentFrequency(inDir, normalizer);
-		// Nombre de documents
-		File[] files = inDir.listFiles();
-		int documentNumber = files.length;
-		if (!outDir.exists()) {
-			outDir.mkdirs();
-		}
-
-		// TfIdfs
-		for (File file : files) {
-			HashMap<String, Double> tfIdfs = getTfIdf(file, dfs, documentNumber, normalizer);
-			TreeSet<String> words = new TreeSet<String>(tfIdfs.keySet());
-			// on écrit dans un fichier
-			try {
-				FileWriter fw = new FileWriter(new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
-				BufferedWriter bw = new BufferedWriter(fw);
-				PrintWriter out = new PrintWriter(bw);
-				// Ecriture des mots
-				for (String word : words) {
-					out.println(word + "\t" + tfIdfs.get(word));
-				}
-				out.close();
-				bw.close();
-				fw.close();
-			} catch (Exception e) {
-				System.out.println(e.toString());
-			}
-		}
-	}
+//	public static void getWeightFiles(File inDir, File outDir, Normalizer normalizer) throws IOException {
+//		// calcul des dfs
+//		HashMap<String, Integer> dfs = getDocumentFrequency(inDir, normalizer);
+//		// Nombre de documents
+//		File[] files = inDir.listFiles();
+//		int documentNumber = files.length;
+//		if (!outDir.exists()) {
+//			outDir.mkdirs();
+//		}
+//
+//		// TfIdfs
+//		for (File file : files) {
+//			HashMap<String, Double> tfIdfs = getTfIdf(file, dfs, documentNumber, normalizer);
+//			TreeSet<String> words = new TreeSet<String>(tfIdfs.keySet());
+//			// on écrit dans un fichier
+//			try {
+//				FileWriter fw = new FileWriter(new File(outDir, file.getName().replaceAll(".txt$", ".poids")));
+//				BufferedWriter bw = new BufferedWriter(fw);
+//				PrintWriter out = new PrintWriter(bw);
+//				// Ecriture des mots
+//				for (String word : words) {
+//					out.println(word + "\t" + tfIdfs.get(word));
+//				}
+//				out.close();
+//				bw.close();
+//				fw.close();
+//			} catch (Exception e) {
+//				System.out.println(e.toString());
+//			}
+//		}
+//	}
 
 	// http://stackoverflow.com/questions/106770/standard-concise-way-to-copy-a-file-in-java
 	public static void copyFile(File sourceFile, File destFile) throws IOException {
