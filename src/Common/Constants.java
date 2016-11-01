@@ -7,7 +7,8 @@ public interface Constants {
 	static String INVERTED_INDEXES_TOKEN_DIR = "../invertedFilesToken";
 	static String FINAL_INDEX_STEM_DIR = "../indexStem";
 	static String FINAL_INDEX_TOKEN_DIR = "../indexSToken";
-	static String WEIGHT_FILES_FIR = "../weights";
+	static String WEIGHT_FILES_STEM_DIR = "../weightsStem";
+	static String WEIGHT_FILES_TOKEN_DIR = "../weightsToken";
 	static String CORPUS_DIR = "../corpus";
 	static String RESULTS_DIR = "../results";
 	static String SUB_INDEX_DIR = "../subindex/2015/";
