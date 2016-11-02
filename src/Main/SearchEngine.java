@@ -51,6 +51,7 @@ public class SearchEngine implements Constants {
 				keyWordsPos.add(Utils.getWordPosition(wordList, keyWord));
 			}
 			
+			System.out.println("Recherche des fichiers contenant les mots clées");
 			while (sc.hasNext()) {
 				line = sc.nextLine();
 				words = line.split("\t");
@@ -79,7 +80,9 @@ public class SearchEngine implements Constants {
 	public static void saveQueryWeights(String query, String wordList, File invertedFile, File textDirectory, File outDir,
 			Normalizer normalizer) throws IOException {
 
-		ArrayList<String> keyWords = normalizer.normalize(query);
+		System.out.println("sauvegarde des poids de la requete");
+		
+		ArrayList<String> keyWords = normalizer.normalize(query.toLowerCase());
 		HashMap<Integer, Integer> dfs = Utils.getDFIndex(invertedFile);
 		int documentNumber = IndexGenerator.getNbDocuments(textDirectory);
 		if (!outDir.exists()) {
@@ -102,7 +105,7 @@ public class SearchEngine implements Constants {
 			for (String keyWord : keyWords) {
 				keyWordInd = Utils.getWordPosition(wordList, keyWord);
 				tf = 1;
-				tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(keyWord));
+				tfIdf = (double) tf * Math.log((double) documentNumber / (double) dfs.get(keyWordInd));
 				out.println(keyWordInd + "\t" + tfIdf);
 			}
 			out.close();
@@ -118,7 +121,9 @@ public class SearchEngine implements Constants {
 	// wieghtsFilesList : Set<File> contenant les file .poids contenant un des mots
 	//  clées de la requete
 	public static void getSimilarPages(File queryWeights ,Set<File> wieghtsFilesList, File outFile) throws IOException {	
+		System.out.println("calcul de similarité et classement");
 		Utils.getSimilarDocuments(queryWeights, wieghtsFilesList, outFile);
+		System.out.println("Resultats générés");
 	}
 
 	// Faire la liaison entre les noms de hashage et le nom de ces pages pour
@@ -159,12 +164,12 @@ public class SearchEngine implements Constants {
 	public static void main(String[] args) throws IOException {
 		
 		try {
-			String query = "charlie hebdo";
+			String query = "Sepp blatter";
 			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
 			
 			File invertedFile = new File(FINAL_TOKEN_INDEX); 
 			File postingFile = new File(POSTING_INDEX_FILE);
-			File weightsDir = new File(FINAL_INDEX_TOKEN_DIR);
+			File weightsDir = new File(WEIGHT_FILES_TOKEN_DIR);
 			File wordListFile = new File(WORD_LIST_TOKEN_FILE);
 			File textDir = new File(TEXT_DIR);
 			File queryWeightDir = new File(QUERY_WEIGHTS_DIR);
