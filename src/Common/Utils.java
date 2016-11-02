@@ -355,7 +355,7 @@ public class Utils {
 		TreeSet<Integer> wordsList = new TreeSet<Integer>();
 		BufferedReader br1 = new BufferedReader(new FileReader(file1));
 		BufferedReader br2 = new BufferedReader(new FileReader(file2));
-		String line = br1.readLine();
+		String line;
 		String[] wordTfId = null;
 		double num = 0.0, denom1 = 0.0, denom2 = 0.0, w1, w2;
 
@@ -404,7 +404,10 @@ public class Utils {
 		double similarity;
 
 		for (File file2 : fileList) {
-			hits.put(file2.getName(), getSimilarity(file, file2));
+			similarity = getSimilarity(file, file2);
+			if (similarity!=0  && !Double.isNaN(similarity)){
+				hits.put(file2.getName(), similarity);
+			}
 		}
 
 		Comparator<String> comparator = new ValueComparator<String, Double>(hits);
