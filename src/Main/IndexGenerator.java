@@ -214,17 +214,17 @@ public class IndexGenerator implements Constants {
 
 	public static void main(String[] args) throws IOException {
 //		// SaveInvertedFilesByPacks
-		try {
-			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
-			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+//		try {
+//			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
+//			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
 //
 //			// Construct and save postings (files) index
-			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
-			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
-			File wordListStemFile=new File(WORD_LIST_STEM_FILE);
-			if(wordListStemFile.exists()){
-				wordListStemFile.delete();
-			}
+//			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
+//			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
+//			File wordListStemFile=new File(WORD_LIST_STEM_FILE);
+//			if(wordListStemFile.exists()){
+//				wordListStemFile.delete();
+//			}
 //			wordListStemFile.createNewFile();
 //			
 //			File wordListTokenFile=new File(WORD_LIST_TOKEN_FILE);
@@ -232,8 +232,8 @@ public class IndexGenerator implements Constants {
 //				wordListTokenFile.delete();
 //			}
 //			wordListTokenFile.createNewFile();
-			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
-					postingsMap, wordListStemFile);
+////			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
+////					postingsMap, wordListStemFile);
 //			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
 //					postingsMap, wordListTokenFile);
 ////
@@ -248,14 +248,14 @@ public class IndexGenerator implements Constants {
 //			 outTokenDir.mkdir();
 //			 }
 //			
-			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
-			 File(FINAL_STEM_INDEX));
+////			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
+////			 File(FINAL_STEM_INDEX));
 //			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new
 //			 File(FINAL_TOKEN_INDEX));
 //
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		
 		
 		if(false){
@@ -266,7 +266,7 @@ public class IndexGenerator implements Constants {
 			
 		}
 		
-		if(true){
+		if(false){
 			//Creation des poids  stem
 			String wordList = Utils.getWordList(new File(WORD_LIST_STEM_FILE));
 			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
