@@ -7,7 +7,7 @@ Etapes du moteur de recherche :
 
 Pour une requete donnée : 
 - Considérer la requete comme un document et calculer son fichier .poids
-- Calculer la similarité entre la requete et tout les documents (à l'aide des .poids)
-- Choisir les pages les plus similaires à afficher
+- Calculer la similarité entre la requete et tout les documents contenant les mots clées de la requete(à l'aide des .poids)
+- Trier les pages par similarité decroissante
 - Faire la liaison entre les noms de hashage et le nom de ces pages pour les afficher
 
