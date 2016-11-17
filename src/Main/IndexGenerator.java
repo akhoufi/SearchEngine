@@ -169,7 +169,7 @@ public class IndexGenerator implements Constants {
 		try {
 			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
 			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
-			
+
 			// Construct and save postings (files) index
 			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
 			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
@@ -183,8 +183,7 @@ public class IndexGenerator implements Constants {
 			if (wordListTokenFile.exists()) {
 				wordListTokenFile.delete();
 			}
-			
-			
+
 			File outStemDir = new File(FINAL_INDEX_STEM_DIR);
 			if (!outStemDir.exists()) {
 				outStemDir.mkdir();
@@ -193,27 +192,33 @@ public class IndexGenerator implements Constants {
 			if (!outTokenDir.exists()) {
 				outTokenDir.mkdir();
 			}
-			
-			wordListTokenFile.createNewFile();
-			
-			//Process for Stemming
-			int chronoId=Utils.startChrono();
-			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
-					postingsMap, wordListStemFile);
 
-			mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new File(FINAL_STEM_INDEX));
-			String wordList = Utils.getWordList(new File(WORD_LIST_STEM_FILE));
-			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_STEM_DIR),
-					new File(FINAL_STEM_INDEX), wordList, stemmerNoStopWords);
-			System.out.println("Stemming indexation time:"+Utils.formatEndChrono(chronoId));
-//			//Process for Tokenizing
-//			int chronoId=Utils.startChrono();
-//			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
-//					postingsMap, wordListTokenFile);
-//			mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX));
-//			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_TOKEN_DIR),
-//					new File(FINAL_TOKEN_INDEX), wordList, tokenizerNoStopWords);
-//			System.out.println("Tokeninzing indexation time:"+Utils.formatEndChrono(chronoId));
+			wordListTokenFile.createNewFile();
+
+			// Process for Stemming
+			// int chronoId=Utils.startChrono();
+			// saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords,
+			// new File(INVERTED_INDEXES_STEM_DIR),
+			// postingsMap, wordListStemFile);
+			// String stemWordList = Utils.getWordList(new
+			// File(WORD_LIST_STEM_FILE));
+			// mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
+			// File(FINAL_STEM_INDEX));
+			//
+			// IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new
+			// File(WEIGHT_FILES_STEM_DIR),
+			// new File(FINAL_STEM_INDEX), stemWordList, stemmerNoStopWords);
+			// System.out.println("Stemming indexation
+			// time:"+Utils.formatEndChrono(chronoId));
+			// Process for Tokenizing
+			int chronoId = Utils.startChrono();
+			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
+					postingsMap, wordListTokenFile);
+			mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX));
+			String toeknWordList = Utils.getWordList(new File(WORD_LIST_TOKEN_FILE));
+			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_TOKEN_DIR),
+					new File(FINAL_TOKEN_INDEX), toeknWordList, tokenizerNoStopWords);
+			System.out.println("Tokeninzing indexation time:" + Utils.formatEndChrono(chronoId));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
