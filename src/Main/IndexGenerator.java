@@ -43,13 +43,13 @@ public class IndexGenerator implements Constants {
 
 		if (dir.isDirectory()) {
 			File[] subDirs = dir.listFiles();
-			String wordList="";
+			String wordList = "";
 			for (File subDir : subDirs) {
 				File[] subDirs2 = subDir.listFiles();
 				for (File subDir2 : subDirs2) {
 					File outFile = new File(
 							outDir.getPath() + "/" + subDir.getName() + "_" + subDir2.getName() + ".ind");
-					wordList = Utils.getInvertedFile(subDir2, normalizer, postingsMap, wordList, wordListFile,outFile);
+					wordList = Utils.getInvertedFile(subDir2, normalizer, postingsMap, wordList, wordListFile, outFile);
 
 				}
 
@@ -113,56 +113,8 @@ public class IndexGenerator implements Constants {
 
 	}
 
-//	// Gets document frequency of words using the index generated, unlike what
-//	// we did in TP
-//	//Je n'ai pas changé cette méthode (à toi de l'adapter, j'ai créé une fonction dans Utils qui récupère l'index nécessaire pour les DF (getDFIndex) 
-//	//Mais il est en <Integer, Integer> car je garde le mot en tant que position (comme on en a parlé) 
-//	public static HashMap<String, Integer> getDft(File invertedFile) throws IOException {
-//		HashMap<String, Integer> hits = new HashMap<String, Integer>();
-//		String line = null;
-//		String[] words = null;
-//		Scanner sc = new java.util.Scanner(invertedFile);
-//
-//		while (sc.hasNext()) {
-//			line = sc.nextLine();
-//			words = line.split("\t");
-//			hits.put(words[0], Integer.parseInt(words[1]));
-//
-//		}
-//		sc.close();
-//
-//		return hits;
-//	}
-//
-//	// Gets document frequency of a word using the index generated
-//	public static Integer getDfOfWord(File invertedFile, String word) throws IOException {
-//		String line = null;
-//		String[] words = null;
-//		Scanner sc = new java.util.Scanner(invertedFile);
-//		Integer dft = 0;
-//		while (sc.hasNext()) {
-//			line = sc.nextLine();
-//			words = line.split("\t");
-//			if (word.equals(words[0])) {
-//				dft = Integer.parseInt(words[1]);
-//				sc.close();
-//				return dft;
-//			}
-//		}
-//		if (dft == 0) {
-//			System.out.println(word + " getDfOfT() = 0 ");
-//		}
-//		sc.close();
-//
-//		return dft;
-//	}
-
-	// Creates the .poids files of each page in the corpus
-	// inDir : textDir
-	// outDir : weightsDir
-	// invertedFile : index file of the whole corpus
-	public static void saveWeightFiles(File inDir, File outDir, File invertedFile, String wordList, Normalizer normalizer)
-			throws IOException {
+	public static void saveWeightFiles(File inDir, File outDir, File invertedFile, String wordList,
+			Normalizer normalizer) throws IOException {
 
 		File[] files = null;
 		// calcul des dfs
@@ -213,66 +165,58 @@ public class IndexGenerator implements Constants {
 	}
 
 	public static void main(String[] args) throws IOException {
-//		// SaveInvertedFilesByPacks
-//		try {
-//			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
-//			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
-//
-//			// Construct and save postings (files) index
-//			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
-//			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
-//			File wordListStemFile=new File(WORD_LIST_STEM_FILE);
-//			if(wordListStemFile.exists()){
-//				wordListStemFile.delete();
-//			}
-//			wordListStemFile.createNewFile();
-//			
-//			File wordListTokenFile=new File(WORD_LIST_TOKEN_FILE);
-//			if(wordListTokenFile.exists()){
-//				wordListTokenFile.delete();
-//			}
-//			wordListTokenFile.createNewFile();
-////			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
-////					postingsMap, wordListStemFile);
+		// SaveInvertedFilesByPacks
+		try {
+			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
+			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+			
+			// Construct and save postings (files) index
+			LinkedHashMap<String, Integer> postingsMap = Utils.ConstructPostingsMap(new File(TEXT_DIR));
+			Utils.savePostingsMap(postingsMap, new File(POSTING_INDEX_FILE));
+			File wordListStemFile = new File(WORD_LIST_STEM_FILE);
+			if (wordListStemFile.exists()) {
+				wordListStemFile.delete();
+			}
+			wordListStemFile.createNewFile();
+
+			File wordListTokenFile = new File(WORD_LIST_TOKEN_FILE);
+			if (wordListTokenFile.exists()) {
+				wordListTokenFile.delete();
+			}
+			
+			
+			File outStemDir = new File(FINAL_INDEX_STEM_DIR);
+			if (!outStemDir.exists()) {
+				outStemDir.mkdir();
+			}
+			File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
+			if (!outTokenDir.exists()) {
+				outTokenDir.mkdir();
+			}
+			
+			wordListTokenFile.createNewFile();
+			
+			//Process for Stemming
+			int chronoId=Utils.startChrono();
+			saveInvertedFileByPack(new File(TEXT_DIR), stemmerNoStopWords, new File(INVERTED_INDEXES_STEM_DIR),
+					postingsMap, wordListStemFile);
+
+			mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new File(FINAL_STEM_INDEX));
+			String wordList = Utils.getWordList(new File(WORD_LIST_STEM_FILE));
+			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_STEM_DIR),
+					new File(FINAL_STEM_INDEX), wordList, stemmerNoStopWords);
+			System.out.println("Stemming indexation time:"+Utils.formatEndChrono(chronoId));
+//			//Process for Tokenizing
+//			int chronoId=Utils.startChrono();
 //			saveInvertedFileByPack(new File(TEXT_DIR), tokenizerNoStopWords, new File(INVERTED_INDEXES_TOKEN_DIR),
 //					postingsMap, wordListTokenFile);
-////
-//			 //MergeManyInvertedFiles
-//			 File outStemDir = new File(FINAL_INDEX_STEM_DIR);
-//			 if (!outStemDir.exists()) {
-//			 outStemDir.mkdir();
-//			 }
-//			
-//			 File outTokenDir = new File(FINAL_INDEX_TOKEN_DIR);
-//			 if (!outTokenDir.exists()) {
-//			 outTokenDir.mkdir();
-//			 }
-//			
-////			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_STEM_DIR), new
-////			 File(FINAL_STEM_INDEX));
-//			 mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new
-//			 File(FINAL_TOKEN_INDEX));
-//
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-		
-		
-		if(false){
-			//Creation des poids  token
-			String wordList = Utils.getWordList(new File(WORD_LIST_TOKEN_FILE));
-			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
-			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX), wordList, tokenizerNoStopWords);
-			
+//			mergeManyInvertedFiles(new File(INVERTED_INDEXES_TOKEN_DIR), new File(FINAL_TOKEN_INDEX));
+//			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_TOKEN_DIR),
+//					new File(FINAL_TOKEN_INDEX), wordList, tokenizerNoStopWords);
+//			System.out.println("Tokeninzing indexation time:"+Utils.formatEndChrono(chronoId));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		if(false){
-			//Creation des poids  stem
-			String wordList = Utils.getWordList(new File(WORD_LIST_STEM_FILE));
-			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
-			IndexGenerator.saveWeightFiles(new File(TEXT_DIR), new File(WEIGHT_FILES_STEM_DIR), new File(FINAL_STEM_INDEX), wordList, stemmerNoStopWords);
-			
-		}
-		
+
 	}
 }
