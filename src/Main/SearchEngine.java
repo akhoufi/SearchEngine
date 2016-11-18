@@ -91,7 +91,7 @@ public class SearchEngine implements Constants {
 		}
 		// on écrit dans un fichier
 		try {
-			File queryFile = new File(outDir.getAbsolutePath() + "/query.poids");
+			File queryFile = new File(outDir.getAbsolutePath() + "/"+query+".poids");
 			if (queryFile.exists()) {
 				queryFile.delete();
 			}
@@ -170,6 +170,7 @@ public class SearchEngine implements Constants {
 			String[] query = { "Charlie Hebdo", "volcan", "playoffs NBA", "accidents d’avion", "laïcité",
 					"elections l´egislatives", "Sepp Blatter", "budget de la d´efense", "Galaxy S6", "Kurdes" };
 			Normalizer tokenizerNoStopWords = new FrenchTokenizer(new File(STOPWORDS_FILENAME));
+			Normalizer stemmerNoStopWords = new FrenchStemmer(new File(STOPWORDS_FILENAME));
 			File postingFile = new File(POSTING_INDEX_FILE);
 
 			// Generate Token results
@@ -191,7 +192,7 @@ public class SearchEngine implements Constants {
 
 				saveQueryWeights(query[i], wordTokenList, invertedTokenFile, textDir, queryWeightDir, tokenizerNoStopWords);
 
-				File queryWeightsFile = new File(queryWeightDir.getAbsolutePath() + "/query.poids");
+				File queryWeightsFile = new File(queryWeightDir.getAbsolutePath() + "/"+query[i]+".poids");
 
 				getSimilarPages(queryWeightsFile, pagesList, resultsFile);
 
@@ -209,9 +210,9 @@ public class SearchEngine implements Constants {
 			for (int i = 0; i < query.length; i++) {
 				File resultsFile = new File(RESULTS_DIR_STEM + "/" + query[i] + ".txt");
 				Set<File> pagesList = getPages(query[i], invertedStemFile, postingFile, weightsStemDir, wordStemList,
-						tokenizerNoStopWords);
+						stemmerNoStopWords);
 
-				saveQueryWeights(query[i], wordStemList, invertedStemFile, textDir, queryWeightDir, tokenizerNoStopWords);
+				saveQueryWeights(query[i], wordStemList, invertedStemFile, textDir, queryWeightDir, stemmerNoStopWords);
 
 				File queryWeightsFile = new File(queryWeightDir.getAbsolutePath() + "/"+query[i]+".poids");
 
