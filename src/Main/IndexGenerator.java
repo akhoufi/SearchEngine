@@ -2,31 +2,20 @@ package Main;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import Common.Utils;
+
 import Common.Constants;
 import Common.FrenchStemmer;
 import Common.FrenchTokenizer;
 import Common.Normalizer;
+import Common.Utils;
 
 public class IndexGenerator implements Constants {
 

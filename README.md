@@ -11,3 +11,8 @@ Pour une requete donnée :
 - Trier les pages par similarité decroissante
 - Faire la liaison entre les noms de hashage et le nom de ces pages pour les afficher
 
+
+How it works: 
+
+* Put your data (text directory) in the same level as the project
+* To search a term just change the list string "query" in the file "Main.SearchEngine"
