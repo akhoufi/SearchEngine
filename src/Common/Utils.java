@@ -428,10 +428,14 @@ public class Utils {
 		FileWriter fw = new FileWriter(outFile);
 		BufferedWriter bw = new BufferedWriter(fw);
 		PrintWriter out = new PrintWriter(bw);
+		int i=0;
 		for (Map.Entry<String, Double> hit : sortedHits.entrySet()) {
-			fileName = hit.getKey();
-			similarity = hit.getValue();
-			out.println(fileName + "\t" + similarity);
+			if (i < 20) {
+				fileName = hit.getKey();
+				similarity = hit.getValue();
+				out.println(fileName + "\t" + similarity);
+				i++;
+			}
 		}
 		out.close();
 		bw.close();
@@ -707,7 +711,7 @@ public class Utils {
 		}
 
 		if (wordIndex == -1) {
-			System.out.println("------------------> Pobleme : word not found in wordlist");
+			System.out.println("------------------> word not found in wordlist");
 		}
 
 		return wordIndex;

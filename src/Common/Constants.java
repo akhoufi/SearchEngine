@@ -10,7 +10,8 @@ public interface Constants {
 	static String WEIGHT_FILES_STEM_DIR = "../weightsStem";
 	static String WEIGHT_FILES_TOKEN_DIR = "../weightsToken";
 	static String CORPUS_DIR = "../corpus";
-	static String RESULTS_DIR = "../results";
+	static String RESULTS_DIR_TOKEN = "../resultsToken";
+	static String RESULTS_DIR_STEM = "../resultsStem";
 	static String SUB_INDEX_DIR = "../subindex/2015";
 	static String STOPWORDS_FILENAME = "frenchST.txt";
 	static String FINAL_STEM_INDEX = FINAL_INDEX_STEM_DIR + "/indexStem.ind";
